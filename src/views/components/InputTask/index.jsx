@@ -1,78 +1,66 @@
-import React, { useState } from "react";
-
-import styles from "./index.module.scss";
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import DeleteIcon from '@mui/icons-material/Delete';
+import TextField from '@mui/material/TextField';
 
 export const InputTask = ({ id, title, onDone, onRemove, onEdited }) => {
-  const [checked, setChecked] = useState(false);
-  const [isEdit, setEditMode] = useState(false);
-  const [value, setValue] = useState(title);
+    const [checked, setChecked] = useState(false);
+    const [isEdit, setEditMode] = useState(false);
+    const [value, setValue] = useState(title);
 
-  return (
-    <div className={styles.inputTask}>
-      <label className={styles.inputTaskLabel}>
-        <input
-          type="checkbox"
-          checked={checked}
-          className={styles.inputTaskCheckbox}
-          onChange={(event) => {
-            setChecked(event.target.checked);
-            setTimeout(() => {
-              onDone(id);
-            }, 300);
-          }}
-        />
-        {isEdit ? (
-          <input
-            value={value}
-            className={styles.inputTaskTitleEdit}
-            onChange={(event) => {
-              setValue(event.target.value);
-            }}
-          />
-        ) : (
-          <h3 className={styles.inputTaskTitle}>{title}</h3>
-        )}
-      </label>
-
-      {isEdit ? (
-        <button
-          onClick={() => {
-            setEditMode(false);
-            onEdited(id, value);
-          }}
-          aria-label="Save"
-          className={styles.inputTaskSave}
-        />
-      ) : (
-        <button
-          onClick={() => {
-            setEditMode(!isEdit);
-          }}
-          aria-label="Edit"
-          className={styles.inputTaskEdit}
-        />
-      )}
-
-      <button
-        onClick={() => {
-          if (confirm("Are you sure?")) {
-            onRemove(id);
-          }
-        }}
-        aria-label="Remove"
-        className={styles.inputTaskRemove}
-      />
-    </div>
-  );
+    return (
+        <Box display="flex" alignItems="center" gap={2}>
+            <Checkbox
+                checked={checked}
+                onChange={(event) => {
+                    setChecked(event.target.checked);
+                    setTimeout(() => onDone(id), 300);
+                }}
+            />
+            {isEdit ? (
+                <TextField
+                    value={value}
+                    onChange={(event) => setValue(event.target.value)}
+                    variant="outlined"
+                    fullWidth
+                />
+            ) : (
+                <Box flexGrow={1} component="span">
+                    {title}
+                </Box>
+            )}
+            {isEdit ? (
+                <IconButton
+                    onClick={() => {
+                        setEditMode(false);
+                        onEdited(id, value);
+                    }}
+                    aria-label="Save"
+                >
+                    <SaveIcon />
+                </IconButton>
+            ) : (
+                <IconButton
+                    onClick={() => setEditMode(true)}
+                    aria-label="Edit"
+                >
+                    <EditIcon />
+                </IconButton>
+            )}
+            <IconButton
+                onClick={() => {
+                    if (window.confirm('Are you sure?')) {
+                        onRemove(id);
+                    }
+                }}
+                aria-label="Remove"
+            >
+                <DeleteIcon />
+            </IconButton>
+        </Box>
+    );
 };
-
-/* For Edit mode
-<input
-    className={styles.inputTaskTitleEdit}
-/>
-
-<button
-    aria-label="Save"
-    className={styles.inputTaskSave}
-/>
-*/
