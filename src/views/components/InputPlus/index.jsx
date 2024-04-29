@@ -1,39 +1,51 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import MenuItem from '@mui/material/MenuItem';
 
-import styles from "./index.module.scss";
+export const InputPlus = ({ onAdd, categories }) => {
+    const [inputValue, setInputValue] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState(categories[0] || '');
 
-export const InputPlus = ({ onAdd }) => {
-  const [inputValue, setInputValue] = useState("");
+    const onAddMemoized = useCallback(() => {
+        if (!inputValue || !selectedCategory) {
+            alert('Please enter a task name and select a category.');
+            return;
+        }
+        onAdd(inputValue, selectedCategory);
+        setInputValue('');
+        setSelectedCategory(categories[0] || '');
+    }, [inputValue, selectedCategory, onAdd, categories]);
 
-  const onAddMemoized = useCallback(() => {
-    onAdd(inputValue);
-    setInputValue("");
-  }, [inputValue]);
-
-  console.log("render");
-  return (
-    <div className={styles.inputPlus}>
-      <input
-        type="text"
-        value={inputValue}
-        className={styles.inputPlusValue}
-        placeholder="Type here..."
-        onChange={(event) => {
-          setInputValue(event.target.value);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            onAddMemoized();
-          }
-        }}
-      />
-      <button
-        onClick={() => {
-          onAddMemoized();
-        }}
-        aria-label="Add"
-        className={styles.inputPlusButton}
-      />
-    </div>
-  );
+    return (
+        <Box display="flex" alignItems="center" gap={2}>
+            <TextField
+                label="Type here..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && onAddMemoized()}
+                variant="outlined"
+                fullWidth
+            />
+            <TextField
+                select
+                label="Category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                variant="outlined"
+                sx={{ minWidth: 120 }}
+            >
+                {categories.map((category) => (
+                    <MenuItem key={category} value={category}>
+                        {category}
+                    </MenuItem>
+                ))}
+            </TextField>
+            <IconButton onClick={onAddMemoized} aria-label="Add" color="primary">
+                <AddCircleOutlineIcon />
+            </IconButton>
+        </Box>
+    );
 };
