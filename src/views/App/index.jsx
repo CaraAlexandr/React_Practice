@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
 import { InputPlus } from "../components/InputPlus";
 import { InputTask } from "../components/InputTask";
@@ -6,7 +6,7 @@ import { InputTask } from "../components/InputTask";
 import styles from "./index.module.scss";
 
 export const generateId = () =>
-  Math.random().toString(16).slice(2) + new Date().getTime().toString(36);
+    Math.random().toString(16).slice(2) + new Date().getTime().toString(36);
 
 export const App = () => {
     const [tasks, setTasks] = useState(() => {
@@ -14,38 +14,60 @@ export const App = () => {
         return savedTasks ? JSON.parse(savedTasks) : [];
     });
 
+    const categories = ["Productivity", "Relax", "Chores"];
+
+    const [selectedCategory, setSelectedCategory] = useState("All");
+
     useEffect(() => {
         localStorage.setItem("tasks", JSON.stringify(tasks));
     }, [tasks]);
+
+    const filteredTasks = selectedCategory === "All"
+        ? tasks
+        : tasks.filter(task => task.category === selectedCategory);
+
+    const handleAddTask = (title, category) => {
+        setTasks([...tasks, {
+            id: generateId(),
+            title,
+            category,
+            completed: false,
+        }]);
+    };
 
     return (
         <article className={styles.article}>
             <h1 className={styles.articleTitle}>To Do App</h1>
             <section className={styles.articleSection}>
-                <InputPlus
-                    onAdd={(title) => {
-                        if (!title) {
-                            return;
-                        }
-                        setTasks([
-                            ...tasks,
-                            {
-                                id: generateId(),
-                                title,
-                            },
-                        ]);
-                    }}
-                />
+                <section className={styles.articleSection}>
+                    <InputPlus
+                        onAdd={handleAddTask}
+                        categories={categories}
+                    />
+                </section>
             </section>
             <section className={styles.articleSection}>
-                {tasks.length <= 0 && (
+                <label>Filter by category: </label>
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                    <option value="All">All</option>
+                    <option value="Productivity">Productivity</option>
+                    <option value="Relax">Relax</option>
+                    <option value="Chores">Chores</option>
+                </select>
+            </section>
+            <section className={styles.articleSection}>
+                {filteredTasks.length <= 0 && (
                     <p className={styles.articleText}>There are no tasks.</p>
                 )}
-                {tasks.map((task) => (
+                {filteredTasks.map((task) => (
                     <InputTask
                         key={task.id}
                         id={task.id}
                         title={task.title}
+                        category={task.category}
                         onDone={(id) => {
                             setTasks(tasks.map(t => t.id === id ? {...t, completed: !t.completed} : t));
                         }}
