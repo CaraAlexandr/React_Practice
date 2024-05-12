@@ -5,6 +5,8 @@ import org.example.backend.dto.NoteDTO;
 import org.example.backend.model.Note;
 import org.example.backend.repos.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,10 +18,10 @@ public class NoteService {
     @Autowired
     private NoteRepository noteRepository;
 
-    public List<NoteDTO> findAllNotes() {
-        return noteRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+    public List<NoteDTO> findAllNotes(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return noteRepository.findAll(pageable).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-
     public NoteDTO findNoteById(Long id) {
         Note note = noteRepository.findById(id).orElseThrow(() -> new RuntimeException("Note not found"));
         return convertToDTO(note);
