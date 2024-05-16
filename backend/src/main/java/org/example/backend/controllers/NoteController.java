@@ -1,15 +1,16 @@
 package org.example.backend.controllers;
 
 import org.example.backend.dto.NoteDTO;
+import org.example.backend.model.Type;
 import org.example.backend.model.User;
 import org.example.backend.repos.UserRepository;
 import org.example.backend.security.JwtUtil;
 import org.example.backend.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,22 +35,23 @@ public class NoteController {
     private PasswordEncoder passwordEncoder;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
-    public ResponseEntity<List<NoteDTO>> getAllNotes(@RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "10") int size) {
-        List<NoteDTO> notes = noteService.findAllNotes(page, size);
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER')")
+    public ResponseEntity<Page<NoteDTO>> getAllNotes(@RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "10") int size,
+                                                     @RequestParam(required = false) Type type) {
+        Page<NoteDTO> notes = noteService.findAllNotes(page, size, type);
         return new ResponseEntity<>(notes, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER') or hasAuthority('ROLE_VISITOR')")
     public ResponseEntity<NoteDTO> getNoteById(@PathVariable Long id) {
         NoteDTO noteDTO = noteService.findNoteById(id);
         return new ResponseEntity<>(noteDTO, HttpStatus.OK);
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER')")
     public ResponseEntity<NoteDTO> createOrUpdateNote(@RequestBody NoteDTO noteDTO) {
         NoteDTO savedNote = noteService.saveOrUpdateNote(noteDTO);
         return new ResponseEntity<>(savedNote, HttpStatus.CREATED);
