@@ -34,7 +34,7 @@ public class NoteController {
     private PasswordEncoder passwordEncoder;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
     public ResponseEntity<List<NoteDTO>> getAllNotes(@RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "10") int size) {
         List<NoteDTO> notes = noteService.findAllNotes(page, size);
@@ -42,21 +42,21 @@ public class NoteController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER') or hasAuthority('ROLE_VISITOR')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
     public ResponseEntity<NoteDTO> getNoteById(@PathVariable Long id) {
         NoteDTO noteDTO = noteService.findNoteById(id);
         return new ResponseEntity<>(noteDTO, HttpStatus.OK);
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
     public ResponseEntity<NoteDTO> createOrUpdateNote(@RequestBody NoteDTO noteDTO) {
         NoteDTO savedNote = noteService.saveOrUpdateNote(noteDTO);
         return new ResponseEntity<>(savedNote, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_WRITER')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_USER')")
     public ResponseEntity<NoteDTO> updateNote(@PathVariable Long id, @RequestBody NoteDTO noteDTO) {
         NoteDTO updatedNote = noteService.updateNote(id, noteDTO);
         return new ResponseEntity<>(updatedNote, HttpStatus.OK);
