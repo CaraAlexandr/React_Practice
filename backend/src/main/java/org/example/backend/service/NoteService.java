@@ -1,6 +1,5 @@
 package org.example.backend.service;
 
-
 import org.example.backend.dto.NoteDTO;
 import org.example.backend.model.Note;
 import org.example.backend.repos.NoteRepository;
@@ -22,6 +21,7 @@ public class NoteService {
         Pageable pageable = PageRequest.of(page, size);
         return noteRepository.findAll(pageable).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
+
     public NoteDTO findNoteById(Long id) {
         Note note = noteRepository.findById(id).orElseThrow(() -> new RuntimeException("Note not found"));
         return convertToDTO(note);
@@ -32,6 +32,15 @@ public class NoteService {
         return convertToDTO(note);
     }
 
+    public NoteDTO updateNote(Long id, NoteDTO noteDTO) {
+        Note note = noteRepository.findById(id).orElseThrow(() -> new RuntimeException("Note not found"));
+        note.setType(noteDTO.getType());
+        note.setMessage(noteDTO.getMessage());
+        note.setCompleted(noteDTO.isCompleted());
+        note = noteRepository.save(note);
+        return convertToDTO(note);
+    }
+
     public void deleteNote(Long id) {
         noteRepository.deleteById(id);
     }
@@ -39,14 +48,18 @@ public class NoteService {
     private NoteDTO convertToDTO(Note note) {
         NoteDTO noteDTO = new NoteDTO();
         noteDTO.setId(note.getId());
+        noteDTO.setType(note.getType());
         noteDTO.setMessage(note.getMessage());
+        noteDTO.setCompleted(note.getCompleted());
         return noteDTO;
     }
 
     private Note convertToEntity(NoteDTO noteDTO) {
         Note note = new Note();
         note.setId(noteDTO.getId());
+        note.setType(noteDTO.getType());
         note.setMessage(noteDTO.getMessage());
+        note.setCompleted(noteDTO.isCompleted());
         return note;
     }
 }

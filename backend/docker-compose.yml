@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+      - "5005:5005"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=alex
@@ -13,7 +14,7 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
       - db
-#    restart: on-failure
+    restart: on-failure
 
   db:
     image: postgres:12

@@ -7,8 +7,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
 
-export const InputTask = ({ id, title, onDone, onRemove, onEdited }) => {
-    const [checked, setChecked] = useState(false);
+export const InputTask = ({ id, title, completed, onDone, onRemove, onEdited }) => {
+    const [checked, setChecked] = useState(completed);
     const [isEdit, setEditMode] = useState(false);
     const [value, setValue] = useState(title);
 

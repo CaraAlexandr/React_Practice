@@ -1,19 +1,30 @@
-# Use the official Maven image to build the project
-FROM maven:3.8.1-openjdk-17 as builder
+# Stage 1: Build the application
+FROM maven:3.8.1-openjdk-17 AS builder
 
-# Copy the local code to the container image
+# Set the working directory
 WORKDIR /app
-COPY pom.xml ./
+
+# Copy the Maven project file
+COPY pom.xml .
+
+# Copy the source code
 COPY src ./src
 
-# Perform a clean install, skip tests if necessary
-RUN mvn clean install -DskipTests
+# Package the application, skipping tests for speed
+RUN mvn clean package -DskipTests
 
-# Use the official OpenJDK image to run the application
+# Stage 2: Run the application
 FROM openjdk:17-slim
 
-# Copy the built jar file from the builder stage
+# Set the working directory
+WORKDIR /app
+
+# Copy the packaged jar file from the builder stage
 COPY --from=builder /app/target/*.jar /app.jar
 
-# Set the container to run the application
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Expose port 8080 and 5005 for debugging
+EXPOSE 8080
+EXPOSE 5005
+
+# Run the application with debugging enabled
+ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "/app.jar"]

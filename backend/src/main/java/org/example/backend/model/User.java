@@ -7,12 +7,13 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "app_note")
-public class Note {
+@Table(name = "app_user")
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Type type;
-    private String message;
-    private Boolean completed;
+    private String username;
+    private String password;
+    private String role; // ROLE_ADMIN or ROLE_USER
+
 }
