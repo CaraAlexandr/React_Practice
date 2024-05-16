@@ -14,7 +14,7 @@ export const InputPlus = ({ onAdd, categories }) => {
             alert('Please enter a task name and select a category.');
             return;
         }
-        onAdd(inputValue, selectedCategory);
+        onAdd(inputValue, selectedCategory.toUpperCase());
         setInputValue('');
         setSelectedCategory(categories[0] || '');
     }, [inputValue, selectedCategory, onAdd, categories]);
