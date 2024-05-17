@@ -2,8 +2,10 @@ package org.example.backend.service;
 
 import org.example.backend.dto.NoteDTO;
 import org.example.backend.model.Note;
+import org.example.backend.model.Type;
 import org.example.backend.repos.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,13 @@ public class NoteService {
     @Autowired
     private NoteRepository noteRepository;
 
-    public List<NoteDTO> findAllNotes(int page, int size) {
+    public Page<NoteDTO> findAllNotes(int page, int size, Type type) {
         Pageable pageable = PageRequest.of(page, size);
-        return noteRepository.findAll(pageable).stream().map(this::convertToDTO).collect(Collectors.toList());
+        if (type != null) {
+            return noteRepository.findByType(type, pageable).map(this::convertToDTO);
+        } else {
+            return noteRepository.findAll(pageable).map(this::convertToDTO);
+        }
     }
 
     public NoteDTO findNoteById(Long id) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Select, MenuItem, Box, Button } from '@mui/material';
+import { Container, Typography, Select, MenuItem, Box, Button, Pagination } from '@mui/material';
 import { InputPlus } from '../components/InputPlus';
 import { InputTask } from '../components/InputTask';
 import { ThemeProvider } from '@mui/material/styles';
@@ -17,6 +17,8 @@ const App = ({ authToken }) => {
     const categories = ['PRODUCTIVITY', 'RELAX', 'CHORES'];
     const theme = themeMode === 'light' ? lightTheme : darkTheme;
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,23 +28,26 @@ const App = ({ authToken }) => {
         }
     }, [authToken, navigate]);
 
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const response = await api.get('/api/notes');
-                console.log('Fetched tasks:', response.data); // Debugging
-                setTasks(response.data || []);
-            } catch (error) {
-                console.error('Failed to fetch tasks:', error);
-                navigate('/login');
-            }
-        };
-        fetchTasks();
-    }, [navigate]);
+    const fetchTasks = async (page, category) => {
+        try {
+            const response = await api.get('/api/notes', {
+                params: {
+                    page: page - 1, // Backend is 0-indexed
+                    size: 10,
+                    type: category !== 'All' ? category : null,
+                },
+            });
+            setTasks(response.data.content || []);
+            setTotalPages(response.data.totalPages);
+        } catch (error) {
+            console.error('Failed to fetch tasks:', error);
+            navigate('/login');
+        }
+    };
 
     useEffect(() => {
-        console.log('Updated tasks:', tasks); // Debugging
-    }, [tasks]);
+        fetchTasks(page, selectedCategory);
+    }, [page, selectedCategory]);
 
     const handleAddTask = async (message, category) => {
         try {
@@ -52,7 +57,7 @@ const App = ({ authToken }) => {
                 completed: false,
             };
             const response = await api.post('/api/notes', newTask);
-            setTasks([...tasks, response.data]);
+            fetchTasks(page, selectedCategory); // Refresh tasks after adding
         } catch (error) {
             console.error('Failed to add task:', error);
         }
@@ -63,7 +68,7 @@ const App = ({ authToken }) => {
             const taskToUpdate = tasks.find(task => task.id === id);
             const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
             await api.put(`/api/notes/${id}`, updatedTask);
-            setTasks(tasks.map(task => task.id === id ? updatedTask : task));
+            fetchTasks(page, selectedCategory); // Refresh tasks after updating
         } catch (error) {
             console.error('Failed to update task:', error);
         }
@@ -72,7 +77,7 @@ const App = ({ authToken }) => {
     const handleTaskRemoval = async (id) => {
         try {
             await api.delete(`/api/notes/${id}`);
-            setTasks(tasks.filter(task => task.id !== id));
+            fetchTasks(page, selectedCategory); // Refresh tasks after deletion
         } catch (error) {
             console.error('Failed to delete task:', error);
         }
@@ -83,15 +88,15 @@ const App = ({ authToken }) => {
             const taskToUpdate = tasks.find(task => task.id === id);
             const updatedTask = { ...taskToUpdate, message: newTitle }; // Update message field
             await api.put(`/api/notes/${id}`, updatedTask);
-            setTasks(tasks.map(task => task.id === id ? updatedTask : task));
+            fetchTasks(page, selectedCategory); // Refresh tasks after updating
         } catch (error) {
             console.error('Failed to update task:', error);
         }
     };
 
-    const filteredTasks = selectedCategory === 'All'
-        ? tasks
-        : tasks.filter(task => task.type === selectedCategory);
+    const handlePageChange = (event, value) => {
+        setPage(value);
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -123,12 +128,12 @@ const App = ({ authToken }) => {
                         ))}
                     </Select>
                 </Box>
-                {filteredTasks.length === 0 ? (
+                {tasks.length === 0 ? (
                     <Typography variant="subtitle1">
                         There are no tasks.
                     </Typography>
                 ) : (
-                    filteredTasks.map((task) => (
+                    tasks.map((task) => (
                         <InputTask
                             key={task.id}
                             id={task.id}
@@ -140,6 +145,7 @@ const App = ({ authToken }) => {
                         />
                     ))
                 )}
+                <Pagination count={totalPages} page={page} onChange={handlePageChange} />
             </Container>
         </ThemeProvider>
     );
